@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Font; 
 import java.awt.event.WindowEvent; 
 import java.io.File; 	
-import java.io.BufferedReader; 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -130,6 +129,7 @@ public final class Notepad implements Runnable {
 			if (result == JFileChooser.APPROVE_OPTION) {
 				try {
 					currentFile = chooser.getSelectedFile(); 
+					frame.setTitle(currentFile.getName()); 
 					PrintWriter w = new PrintWriter(currentFile); 		
 					w.println(getTextArea()); 
 					w.close(); 
@@ -321,6 +321,7 @@ public final class Notepad implements Runnable {
         setLineNumbers(true);
 
         textArea.insert(extractTextFromFile(new File("sample.txt")), 0); 
+        frame.setTitle("Notepad -- sample.txt"); 
 
         frame.setResizable(true);      
         frame.setVisible(true);
