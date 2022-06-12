@@ -4,11 +4,11 @@ import java.awt.Dimension;
 import java.awt.Font; 
 import java.awt.event.WindowEvent; 
 import java.io.File; 	
+import java.io.BufferedReader; 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Element;
 
 	
-public final class Notepad extends JFrame implements Runnable {
+public final class Notepad implements Runnable {
 	private JFrame frame = new JFrame("Notepad"); 	
 
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -101,12 +101,10 @@ public final class Notepad extends JFrame implements Runnable {
 				try {
 					File file = chooser.getSelectedFile();
 					currentFile = file; 
-					clearTextArea(); 
-					Scanner scanner = new Scanner(file); 
-					while (scanner.hasNextLine()) {	
-						data += scanner.nextLine();
-					}	
-					setTextArea(data); 
+					textArea.setText(""); 
+					String data = extractTextFromFile(file); 
+					textArea.setText(data); 	
+					frame.setTitle("Notepad -- " + file.getName()); 
 				} catch (Exception exception) {
 
 				}
@@ -183,13 +181,10 @@ public final class Notepad extends JFrame implements Runnable {
 		}
 	}
 
-	protected void clearTextArea() {
-		textArea.setText(""); 
+	protected void clearTextArea(String text, int start, int end) {
+		textArea.replaceRange(text, start, end); 
 	}
 
-	protected void setTextArea(String data) {
-		textArea.setText(data); 
-	}
 
 	protected String getTextArea() {
 		return textArea.getText();
@@ -217,7 +212,7 @@ public final class Notepad extends JFrame implements Runnable {
 		cut.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				String highlighted = textArea.getSelectedText(); 
-        		clearTextArea(); 
+        		clearTextArea(highlighted, 0, highlighted.length()); 
         		copyFromClipboard(highlighted);
 			}
 		}); 	
@@ -303,10 +298,19 @@ public final class Notepad extends JFrame implements Runnable {
         scroller.setEnabled(true);
         scroller.setVisible(true);
         frame.add(scroller); 
-        textArea.insert("Sample text", 0); 
 	}
 
-	private void init() {
+	private String extractTextFromFile(File file) throws IOException {
+		Scanner scanner = new Scanner(file); 
+		String data = ""; 
+		while (scanner.hasNextLine()) {
+			data += scanner.nextLine(); 
+			data += "\n"; 
+		}
+		return data; 
+	}
+
+	private void init() throws IOException {
 		toolkit = Toolkit.getDefaultToolkit();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(screenWidth, screenHeight); 
@@ -316,11 +320,21 @@ public final class Notepad extends JFrame implements Runnable {
         addTextBox(); 
         setLineNumbers(true);
 
+        textArea.insert(extractTextFromFile(new File("sample.txt")), 0); 
+
         frame.setResizable(true);      
         frame.setVisible(true);
 	}
 
 	public void run() {
-		init(); 
+		try {
+			init(); 	
+		} catch (Exception exception) {
+
+		}
+	}
+
+	public Notepad() {
+
 	}
 }
