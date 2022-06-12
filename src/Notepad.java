@@ -13,15 +13,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner; 
-import java.io.PrintWriter; 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import java.util.Scanner; 
 import java.io.PrintWriter; 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Element;
 
-
-public final class Notepad extends Thread implements Runnable {
+	
+public final class Notepad extends JFrame implements Runnable {
 	private JFrame frame = new JFrame("Notepad"); 	
 
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -29,6 +30,7 @@ public final class Notepad extends Thread implements Runnable {
 	private int screenHeight = (int)screenSize.getHeight(); 
 
 	private JTextArea textArea; 
+	private JTextArea lines; 
 	private JMenuBar menu; 
 
 	private JMenu file; 
@@ -49,7 +51,8 @@ public final class Notepad extends Thread implements Runnable {
 	private JMenuItem newWindow; 
 	private JMenuItem closeWindow; 
 
-	private JScrollPane scroller; 
+	private JPanel panel; 
+	private JScrollPane scroller; 	
 
 	public File currentFile;
 
@@ -64,7 +67,7 @@ public final class Notepad extends Thread implements Runnable {
 
 	private class CloseWindow implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			kill(); 
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		}
 	}
 
@@ -140,6 +143,43 @@ public final class Notepad extends Thread implements Runnable {
 
 		private SaveAs() {
 
+		}
+	}
+
+	public void setLineNumbers(boolean flag) {
+		if (flag) {
+			lines = new JTextArea("1"); 
+			lines.setEditable(false);
+			Font font = new Font("Lucida Console", Font.PLAIN, 20);
+        	lines.setFont(font); 
+
+			textArea.getDocument().addDocumentListener(new DocumentListener(){
+				public String getText(){
+					int caretPosition = textArea.getDocument().getLength();
+					Element root = textArea.getDocument().getDefaultRootElement();
+					String text = "1 " + System.getProperty("line.separator");
+					for(int i = 2; i < root.getElementIndex( caretPosition ) + 2; i++){
+						text += i + System.getProperty("line.separator");
+					}
+					return text;
+				}
+				@Override
+				public void changedUpdate(DocumentEvent de) {
+					lines.setText(getText());
+				}
+
+				@Override
+				public void insertUpdate(DocumentEvent de) {
+					lines.setText(getText());
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent de) {
+					lines.setText(getText());
+				}
+			});
+			scroller.getViewport().add(textArea);
+			scroller.setRowHeaderView(lines);
 		}
 	}
 
@@ -258,29 +298,26 @@ public final class Notepad extends Thread implements Runnable {
 		textArea.setBounds(0, 0, screenWidth, screenHeight); 
         Font font = new Font("Lucida Console", Font.PLAIN, 20);
         textArea.setFont(font); 
-        scroller = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scroller = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setPreferredSize(new Dimension(100,100));
+        scroller.setEnabled(true);
+        scroller.setVisible(true);
         frame.add(scroller); 
-        frame.add(textArea); 
         textArea.insert("Sample text", 0); 
 	}
 
 	private void init() {
 		toolkit = Toolkit.getDefaultToolkit();
-		JFrame.setDefaultLookAndFeelDecorated(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(screenWidth, screenHeight); 
 
         addMenu(); 
         configureMenu(); 
         addTextBox(); 
+        setLineNumbers(true);
 
-        frame.setLayout(null);  	
         frame.setResizable(true);      
         frame.setVisible(true);
-	}
-
-	protected void kill() {
-		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 	}
 
 	public void run() {
