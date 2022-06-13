@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -19,6 +20,9 @@ import java.io.PrintWriter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Element;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.lang.Exception; 
 
 	
 public final class Notepad implements Runnable {
@@ -28,7 +32,7 @@ public final class Notepad implements Runnable {
 	private int screenWidth = (int)screenSize.getWidth(); 
 	private int screenHeight = (int)screenSize.getHeight(); 
 
-	private JTextArea textArea; 
+	private JTextArea textArea = new JTextArea(); 
 	private JTextArea lines; 
 	private JMenuBar menu; 
 
@@ -144,6 +148,73 @@ public final class Notepad implements Runnable {
 		}
 	}
 
+	private class Find implements ActionListener {
+
+		private class NoSuchSubstring extends Exception {
+			public NoSuchSubstring() {
+				super("Substring not Found"); 
+			}
+		}
+
+		private int getLineFromIndex(int startIndex, String content) throws NoSuchSubstring {
+			char[] ch = content.toCharArray(); 
+			int line = -1; 
+			for (int i = 0; i < ch.length; i++) {
+				if (ch[i] == '\n') {
+					line++; 
+				}
+				if (i == startIndex) {
+					return line + 1; 
+				}
+			}
+			throw new NoSuchSubstring(); 
+		}
+
+		private String search(String string, String subString) {
+			ArrayList<String> strList = new ArrayList<String>();
+			ArrayList<Integer> intList = new ArrayList<Integer>();
+			HashMap<String, Integer> matches = new HashMap<String, Integer>();
+			int totalMatches = 0; 
+
+			Pattern pattern = Pattern.compile(subString, Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(string); 
+			while (matcher.find()) {
+				strList.add(matcher.group()); 
+				intList.add(matcher.start()); 
+			}
+
+			totalMatches = intList.size(); 
+
+			for (int i = 0; i < totalMatches; i++) {
+				System.out.println(strList.get(i) + " " + intList.get(i)); 
+			}
+			String result = "No matches"; 
+			if (totalMatches > 0) {
+				result = "Found " + strList.size() + " matches\n"; 
+				try {
+					for (int i : intList) {
+						result += "At line " + getLineFromIndex(i, string) + "\n"; 
+					}
+				} catch(NoSuchSubstring exception) {}
+				
+				return result; 
+			} 
+			return result; 
+		}
+
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				String find = JOptionPane.showInputDialog(frame, "Find text"); 
+				System.out.println(find); 
+				String content = textArea.getText(); 
+				JOptionPane.showMessageDialog(null, search(content, find), "Results", 1);
+			} catch (Exception exception) {
+				exception.printStackTrace(); 
+			}
+		}
+	}
+
 	public void setLineNumbers(boolean flag) {
 		if (flag) {
 			lines = new JTextArea("1"); 
@@ -240,7 +311,9 @@ public final class Notepad implements Runnable {
 		SaveAs saveAsDialog = new SaveAs();
 		saveAs.addActionListener(saveAsDialog); 		
 
-	}
+		Find findDialog = new Find(); 
+		find.addActionListener(findDialog); 
+	}	
 
 	private void addMenu() {
 		menu = new JMenuBar(); 
@@ -289,7 +362,6 @@ public final class Notepad implements Runnable {
 	}
 
 	private void addTextBox() {
-		textArea = new JTextArea();
 		textArea.setBounds(0, 0, screenWidth, screenHeight); 
         Font font = new Font("Lucida Console", Font.PLAIN, 20);
         textArea.setFont(font); 

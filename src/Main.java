@@ -5,7 +5,8 @@ public class Main {
 	private static ArrayList<Thread> applications = new ArrayList<Thread>(); 
 
 	protected static void newApp() {
-		Thread app = new Thread(new Notepad()); 
+		Notepad _app = new Notepad(); 
+		Thread app = new Thread(_app); 
 		app.start(); 
 		applications.add(app); 
 	}
