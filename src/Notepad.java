@@ -9,6 +9,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,8 @@ import java.lang.Exception;
 public final class Notepad implements Runnable {
 	private JFrame frame = new JFrame("Notepad"); 	
 
+	private int tabWidth = 2; 
+	private Font font = new Font("Monospaced", Font.PLAIN, 20); 
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	private int screenWidth = (int)screenSize.getWidth(); 
 	private int screenHeight = (int)screenSize.getHeight(); 
@@ -131,7 +134,7 @@ public final class Notepad implements Runnable {
 			if (result == JFileChooser.APPROVE_OPTION) {
 				try {
 					currentFile = chooser.getSelectedFile(); 
-					frame.setTitle(currentFile.getName()); 
+					frame.setTitle("Notepad -- " + currentFile.getName()); 
 					PrintWriter w = new PrintWriter(currentFile); 		
 					w.println(getTextArea()); 
 					w.close(); 
@@ -239,7 +242,6 @@ public final class Notepad implements Runnable {
 		if (flag) {
 			lines = new JTextArea("1"); 
 			lines.setEditable(false);
-			Font font = new Font("Lucida Console", Font.PLAIN, 20);
         	lines.setFont(font); 
 
 			textArea.getDocument().addDocumentListener(new DocumentListener(){
@@ -390,8 +392,8 @@ public final class Notepad implements Runnable {
 
 	private void addTextBox() {
 		textArea.setBounds(0, 0, screenWidth, screenHeight); 
-        Font font = new Font("Lucida Console", Font.PLAIN, 20);
         textArea.setFont(font); 
+        textArea.setTabSize(tabWidth); 
 		scroller = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroller.setPreferredSize(new Dimension(100,100));
         scroller.setEnabled(true);
