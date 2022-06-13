@@ -211,12 +211,24 @@ public final class Notepad implements Runnable {
 		}
 	}
 
-	private class FindReplace extends Find {
+	private class FindReplace implements ActionListener {
+		JTextField find = new JTextField(); 
+		JTextField replaceWith = new JTextField();
+		JComponent comps[] = new JComponent[]{
+			new JLabel("Find"), find, new JLabel("Replace with"), replaceWith
+		}; 
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
-				JOptionPane.showMessageDialog(null, "Body", "Results", 1);
+				int result = JOptionPane.showConfirmDialog(null, comps, "Find and replace", 1);
+				if (result == JOptionPane.OK_OPTION) {
+					String findText = find.getText(); 
+					String replaceText = replaceWith.getText(); 
+					String content = getTextArea(); 
+					content = content.replaceAll(Pattern.quote(findText), replaceText); 
+					setTextArea(content); 
+				}
 			} catch (Exception exception) {
 				exception.printStackTrace(); 
 			}
@@ -267,6 +279,10 @@ public final class Notepad implements Runnable {
 
 	protected String getTextArea() {
 		return textArea.getText();
+	}
+
+	protected void setTextArea(String text) {
+		textArea.setText(text);
 	}
 
 	private void copyFromClipboard(String toCopy) {
