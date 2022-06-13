@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -49,7 +48,7 @@ public final class Notepad implements Runnable {
 	private JMenuItem paste; 
 	private JMenuItem selectAll; 	
 
-	private JMenuItem print;
+	private JMenuItem findReplace;
 	private JMenuItem find; 
 	private JMenuItem newWindow; 
 	private JMenuItem closeWindow; 
@@ -85,7 +84,6 @@ public final class Notepad implements Runnable {
 					System.out.println("Exception");
 				} 
 			}
-
 		}
 
 		private Save() {
@@ -150,15 +148,15 @@ public final class Notepad implements Runnable {
 
 	private class Find implements ActionListener {
 
-		private class NoSuchSubstring extends Exception {
+		protected class NoSuchSubstring extends Exception {
 			public NoSuchSubstring() {
 				super("Substring not Found"); 
 			}
 		}
 
-		private int getLineFromIndex(int startIndex, String content) throws NoSuchSubstring {
+		protected int getLineFromIndex(int startIndex, String content) throws NoSuchSubstring {
 			char[] ch = content.toCharArray(); 
-			int line = -1; 
+			int line = 0; 
 			for (int i = 0; i < ch.length; i++) {
 				if (ch[i] == '\n') {
 					line++; 
@@ -170,10 +168,9 @@ public final class Notepad implements Runnable {
 			throw new NoSuchSubstring(); 
 		}
 
-		private String search(String string, String subString) {
+		protected String search(String string, String subString) {
 			ArrayList<String> strList = new ArrayList<String>();
 			ArrayList<Integer> intList = new ArrayList<Integer>();
-			HashMap<String, Integer> matches = new HashMap<String, Integer>();
 			int totalMatches = 0; 
 
 			Pattern pattern = Pattern.compile(subString, Pattern.CASE_INSENSITIVE);
@@ -190,7 +187,7 @@ public final class Notepad implements Runnable {
 			}
 			String result = "No matches"; 
 			if (totalMatches > 0) {
-				result = "Found " + strList.size() + " matches\n"; 
+				result = "Found " + strList.size() + " match(es)\n"; 
 				try {
 					for (int i : intList) {
 						result += "At line " + getLineFromIndex(i, string) + "\n"; 
@@ -202,13 +199,24 @@ public final class Notepad implements Runnable {
 			return result; 
 		}
 
-
 		public void actionPerformed(ActionEvent e) {
 			try {
 				String find = JOptionPane.showInputDialog(frame, "Find text"); 
 				System.out.println(find); 
 				String content = textArea.getText(); 
 				JOptionPane.showMessageDialog(null, search(content, find), "Results", 1);
+			} catch (Exception exception) {
+				exception.printStackTrace(); 
+			}
+		}
+	}
+
+	private class FindReplace extends Find {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				JOptionPane.showMessageDialog(null, "Body", "Results", 1);
 			} catch (Exception exception) {
 				exception.printStackTrace(); 
 			}
@@ -313,6 +321,9 @@ public final class Notepad implements Runnable {
 
 		Find findDialog = new Find(); 
 		find.addActionListener(findDialog); 
+
+		FindReplace findReplaceDialog = new FindReplace();
+		findReplace.addActionListener(findReplaceDialog);
 	}	
 
 	private void addMenu() {
@@ -323,8 +334,8 @@ public final class Notepad implements Runnable {
 		more = new JMenu("More"); 
 
 		save = new JMenuItem("Save"); 
-		saveAs = new JMenuItem("Save as"); 
-		open = new JMenuItem("open"); 
+		saveAs = new JMenuItem("Save As"); 
+		open = new JMenuItem("Open"); 
 
 		JMenuItem[] fileItems = {save, saveAs, open}; 
 
@@ -332,10 +343,10 @@ public final class Notepad implements Runnable {
 			file.add(item); 
 		}
 
-		cut = new JMenuItem("cut"); 
-		copy = new JMenuItem("copy"); 
-		paste = new JMenuItem("paste"); 
-		selectAll = new JMenuItem("selectAll");
+		cut = new JMenuItem("Cut"); 
+		copy = new JMenuItem("Copy"); 
+		paste = new JMenuItem("Paste"); 
+		selectAll = new JMenuItem("Select All");
 
 		JMenuItem[] editItems = {cut, copy, paste, selectAll}; 
 
@@ -343,12 +354,12 @@ public final class Notepad implements Runnable {
 			edit.add(item); 
 		}
 
-		print = new JMenuItem("print");
-		find = new JMenuItem("find");
-		newWindow = new JMenuItem("New window");
-		closeWindow = new JMenuItem("Close window");
+		findReplace = new JMenuItem("Find and Replace");
+		find = new JMenuItem("Find");
+		newWindow = new JMenuItem("New Window");
+		closeWindow = new JMenuItem("Close Window");
 
-		JMenuItem[] moreItems = {print, find, newWindow, closeWindow}; 
+		JMenuItem[] moreItems = {find, findReplace, newWindow, closeWindow}; 
 
 		for (JMenuItem item : moreItems) {
 			more.add(item); 
