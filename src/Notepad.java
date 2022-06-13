@@ -51,6 +51,8 @@ public final class Notepad implements Runnable {
 	private JMenuItem paste; 
 	private JMenuItem selectAll; 	
 
+	private JMenuItem _font;
+
 	private JMenuItem findReplace;
 	private JMenuItem find; 
 	private JMenuItem newWindow; 
@@ -146,6 +148,27 @@ public final class Notepad implements Runnable {
 
 		private SaveAs() {
 
+		}
+	}
+
+	private class docFont implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			JTextField fontSizeField = new JTextField();
+			JLabel label = new JLabel("Font size (enter an integer between 1 and 100)");
+
+			JComponent inputs[] = new JComponent[] {
+				label, 
+				fontSizeField
+			}; 
+			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", 1);
+			if (result == JOptionPane.OK_OPTION) {
+				int size = Integer.valueOf(fontSizeField.getText());
+				if (size > 0) {
+					Font __font = new Font("Monospaced", Font.PLAIN, size); 
+					textArea.setFont(__font); 
+					lines.setFont(__font); 
+				}
+			}
 		}
 	}
 
@@ -334,6 +357,9 @@ public final class Notepad implements Runnable {
 			}
 		}); 		
 
+		docFont docFontListener = new docFont();
+		_font.addActionListener(docFontListener);
+
 		SaveAs saveAsDialog = new SaveAs();
 		saveAs.addActionListener(saveAsDialog); 		
 
@@ -365,8 +391,9 @@ public final class Notepad implements Runnable {
 		copy = new JMenuItem("Copy"); 
 		paste = new JMenuItem("Paste"); 
 		selectAll = new JMenuItem("Select All");
+		_font = new JMenuItem("Set Font");
 
-		JMenuItem[] editItems = {cut, copy, paste, selectAll}; 
+		JMenuItem[] editItems = {cut, copy, paste, selectAll, _font}; 
 
 		for (JMenuItem item : editItems) {
 			edit.add(item); 
