@@ -13,10 +13,7 @@ public class SpeakText {
             synthesizer.resume();
             synthesizer.speakPlainText(text, null);
             synthesizer.waitEngineState(Synthesizer.QUEUE_EMPTY);
-            synthesizer.deallocate();
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
