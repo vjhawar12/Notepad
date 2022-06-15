@@ -12,20 +12,24 @@
 import java.util.ArrayList; 
 import javax.swing.SwingUtilities; 
 
-public class Main {
+public class Main { // driver class
+	// list of all threads running
 	private static ArrayList<Thread> applications = new ArrayList<Thread>(); 
 
+	// method to create a new window
 	protected static void newApp() {
+		// basically just add a new instance of notepad to the existing pool of threads
 		Notepad _app = new Notepad(); 
 		Thread app = new Thread(_app); 
 		app.start(); 
 		applications.add(app); 
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception { // driver method
 		newApp(); 
 	}
 
+	// this is really important so Main() isn't accidentally called
 	private Main() {
 		
 	}

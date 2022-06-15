@@ -1,5 +1,5 @@
 // import all the libraries i need
-import javax.swing.*; 
+import javax.swing.*; // there's too many so i just used *
 import java.awt.Toolkit; 
 import java.awt.Dimension; 
 import java.awt.Font; 
