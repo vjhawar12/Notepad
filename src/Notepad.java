@@ -2,34 +2,38 @@ import javax.swing.*;
 import java.awt.Toolkit; 
 import java.awt.Dimension; 
 import java.awt.Font; 
-import java.awt.event.WindowEvent; 
-import java.io.File; 	
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.GraphicsEnvironment; 
+import java.awt.event.WindowEvent; 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File; 	
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.PrintWriter; 
+import java.lang.Exception; 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import java.util.Scanner; 
-import java.io.PrintWriter; 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Element;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.Exception; 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner; 
+import java.util.Locale; 
 
-	
 public final class Notepad implements Runnable {
 	private JFrame frame = new JFrame("Notepad"); 	
 
 	private int tabWidth = 2; 
-	private Font font = new Font("Monospaced", Font.PLAIN, 20); 
+	private int fontSize; 
+	private String fontStyle;  
+	private String[] fontStyles; 
+	private Font font;
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	private int screenWidth = (int)screenSize.getWidth(); 
 	private int screenHeight = (int)screenSize.getHeight(); 
@@ -51,7 +55,8 @@ public final class Notepad implements Runnable {
 	private JMenuItem paste; 
 	private JMenuItem selectAll; 	
 
-	private JMenuItem _font;
+	private JMenuItem fontSizeItem;
+	private JMenuItem fontStyleItem;
 
 	private JMenuItem findReplace;
 	private JMenuItem find; 
@@ -151,7 +156,7 @@ public final class Notepad implements Runnable {
 		}
 	}
 
-	private class docFont implements ActionListener {
+	private class FontSize implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			JTextField fontSizeField = new JTextField();
 			JLabel label = new JLabel("Font size (enter an integer between 1 and 100)");
@@ -162,13 +167,41 @@ public final class Notepad implements Runnable {
 			}; 
 			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", 1);
 			if (result == JOptionPane.OK_OPTION) {
-				int size = Integer.valueOf(fontSizeField.getText());
-				if (size > 0) {
-					Font __font = new Font("Monospaced", Font.PLAIN, size); 
-					textArea.setFont(__font); 
-					lines.setFont(__font); 
+				fontSize = Integer.valueOf(fontSizeField.getText());
+				if (fontSize > 0) {
+					font = new Font(fontStyle, Font.PLAIN, fontSize); 
+					textArea.setFont(font); 
+					lines.setFont(font); 
 				}
 			}
+		}
+
+		private FontSize() {
+
+		}
+	}
+
+	private class FontStyle implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			String result = (String)JOptionPane.showInputDialog(
+				frame, 
+				"Font type (Select font below)", 
+				"Set font type", 
+				JOptionPane.PLAIN_MESSAGE,
+				null, 
+				fontStyles,
+				fontStyles[0]
+			); 
+			if (result != null) {
+				fontStyle = result; 
+				font = new Font(fontStyle, Font.PLAIN, fontSize); 
+				textArea.setFont(font); 
+				lines.setFont(font); 
+			}
+		}
+
+		private FontStyle() {
+
 		}
 	}
 
@@ -357,8 +390,11 @@ public final class Notepad implements Runnable {
 			}
 		}); 		
 
-		docFont docFontListener = new docFont();
-		_font.addActionListener(docFontListener);
+		FontSize fontSizeListener = new FontSize();
+		fontSizeItem.addActionListener(fontSizeListener);
+
+		FontStyle fontStyleListener = new FontStyle();
+		fontStyleItem.addActionListener(fontStyleListener);
 
 		SaveAs saveAsDialog = new SaveAs();
 		saveAs.addActionListener(saveAsDialog); 		
@@ -391,9 +427,10 @@ public final class Notepad implements Runnable {
 		copy = new JMenuItem("Copy"); 
 		paste = new JMenuItem("Paste"); 
 		selectAll = new JMenuItem("Select All");
-		_font = new JMenuItem("Set Font");
+		fontSizeItem = new JMenuItem("Set Font Size");
+		fontStyleItem = new JMenuItem("Set Font Style");
 
-		JMenuItem[] editItems = {cut, copy, paste, selectAll, _font}; 
+		JMenuItem[] editItems = {cut, copy, paste, selectAll, fontSizeItem, fontStyleItem}; 
 
 		for (JMenuItem item : editItems) {
 			edit.add(item); 
@@ -418,6 +455,9 @@ public final class Notepad implements Runnable {
 	}
 
 	private void addTextBox() {
+		fontStyle = fontStyles[0]; 
+		fontSize = 20; 
+		font = new Font(fontStyle, Font.PLAIN, fontSize); 
 		textArea.setBounds(0, 0, screenWidth, screenHeight); 
         textArea.setFont(font); 
         textArea.setTabSize(tabWidth); 
@@ -438,7 +478,20 @@ public final class Notepad implements Runnable {
 		return data; 
 	}
 
+	private void addFontsToArray() throws IOException {
+ 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Font[] allFonts = ge.getAllFonts();
+		int i = 0;
+		fontStyles = new String[allFonts.length];  
+		for (Font font : allFonts) {
+			fontStyles[i] = font.getFontName(Locale.US); 
+			i++; 
+		}
+		fontStyle = fontStyles[0]; 	
+	}
+
 	private void init() throws IOException {
+		addFontsToArray();
 		toolkit = Toolkit.getDefaultToolkit();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(screenWidth, screenHeight); 
