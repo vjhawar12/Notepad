@@ -11,11 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File; 	
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter; 
-import java.lang.Exception; 
-import javax.swing.JDialog;
+import java.lang.Exception;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -23,14 +20,13 @@ import javax.swing.text.Element;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner; 
-import java.util.Locale; 
+import java.util.Locale;
 
 // this is the notepad class which inherits runnable (for multithreading) and sets up the gui
 public final class Notepad implements Runnable {
 	// create the application frame
-	private JFrame frame = new JFrame("Notepad"); 	
+	private final JFrame frame = new JFrame("Notepad");
 
 	// define a few variables 
 	private int tabWidth = 2; // for tabwidth
@@ -61,7 +57,7 @@ public final class Notepad implements Runnable {
 
 	private JMenuItem fontSizeItem; // the font size function
 	private JMenuItem fontStyleItem; // the font style function
-
+	private JMenuItem speakAloud; // the speak aloud function
 	private JMenuItem findReplace; // the find and replace function
 	private JMenuItem find; // the find function
 	private JMenuItem newWindow; // the new window function
@@ -173,7 +169,7 @@ public final class Notepad implements Runnable {
 				label, 
 				fontSizeField
 			}; 
-			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", 1); // prompt user to set font
+			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", JOptionPane.YES_NO_CANCEL_OPTION); // prompt user to set font
 			if (result == JOptionPane.OK_OPTION) { // if user enters number and presses ok 
 				fontSize = Integer.valueOf(fontSizeField.getText()); // set font size
 				if (fontSize > 0) { // just in case someone tries to break rajesh's code with a negative font size
@@ -210,6 +206,17 @@ public final class Notepad implements Runnable {
 
 		private FontStyle() { 
 
+		}
+	}
+
+	private class ReadAloud implements ActionListener {
+  		public void actionPerformed(ActionEvent e) {
+  			JLabel label = new JLabel("Read text aloud?");
+			JComponent comps[] = new JComponent[]{label};
+			int result = JOptionPane.showConfirmDialog(null, comps, "Read aloud", JOptionPane.YES_NO_CANCEL_OPTION);
+			if (result == JOptionPane.OK_OPTION) {
+				SpeakText.speak(getTextArea());
+			}
 		}
 	}
 
@@ -404,6 +411,9 @@ public final class Notepad implements Runnable {
 		FontStyle fontStyleListener = new FontStyle();
 		fontStyleItem.addActionListener(fontStyleListener);
 
+		ReadAloud readAloudListener = new ReadAloud();
+		speakAloud.addActionListener(readAloudListener);
+
 		SaveAs saveAsDialog = new SaveAs();
 		saveAs.addActionListener(saveAsDialog); 		
 
@@ -448,8 +458,9 @@ public final class Notepad implements Runnable {
 		find = new JMenuItem("Find");
 		newWindow = new JMenuItem("New Window");
 		closeWindow = new JMenuItem("Close Window");
+		speakAloud = new JMenuItem("Speak aloud");
 
-		JMenuItem[] moreItems = {find, findReplace, newWindow, closeWindow}; 
+		JMenuItem[] moreItems = {find, findReplace, newWindow, closeWindow, speakAloud};
 
 		for (JMenuItem item : moreItems) {
 			more.add(item); 
@@ -504,12 +515,11 @@ public final class Notepad implements Runnable {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(screenWidth, screenHeight); 
 
-        addMenu(); 
-        configureMenu(); 
-        addTextBox(); 
+        addMenu();
+        configureMenu();
+        addTextBox();
         setLineNumbers(true);
-
-        textArea.insert(extractTextFromFile(new File("sample.txt")), 0); 
+		textArea.insert("This is a test", 0);
         frame.setTitle("Notepad -- sample.txt"); 
 
         frame.setResizable(true);      
