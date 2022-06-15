@@ -8,9 +8,8 @@
 // to help you with editing your document
 // I made this using Java and it's swing library for GUI. 
 
-
-import java.util.ArrayList; 
-import javax.swing.SwingUtilities; 
+import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 
 public class Main { // driver class
 	// list of all threads running
@@ -26,7 +25,7 @@ public class Main { // driver class
 	}
 
 	public static void main(String[] args) throws Exception { // driver method
-		newApp(); 
+		SwingUtilities.invokeLater(Main::newApp);
 	}
 
 	// this is really important so Main() isn't accidentally called
