@@ -1,3 +1,4 @@
+// import all the libraries i need
 import javax.swing.*; 
 import java.awt.Toolkit; 
 import java.awt.Dimension; 
@@ -26,121 +27,128 @@ import java.util.List;
 import java.util.Scanner; 
 import java.util.Locale; 
 
+// this is the notepad class which inherits runnable (for multithreading) and sets up the gui
 public final class Notepad implements Runnable {
+	// create the application frame
 	private JFrame frame = new JFrame("Notepad"); 	
 
-	private int tabWidth = 2; 
-	private int fontSize; 
-	private String fontStyle;  
-	private String[] fontStyles; 
-	private Font font;
-	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	private int screenWidth = (int)screenSize.getWidth(); 
-	private int screenHeight = (int)screenSize.getHeight(); 
+	// define a few variables 
+	private int tabWidth = 2; // for tabwidth
+	private int fontSize; // for font size
+	private String fontStyle;  // for font style
+	private String[] fontStyles; // all the possible font styles
+	private Font font; // the current font 
+	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // the screen size
+	private int screenWidth = (int)screenSize.getWidth();  // the screen width (horizontal)
+	private int screenHeight = (int)screenSize.getHeight(); // the screen length (vertical)
 
-	private JTextArea textArea = new JTextArea(); 
-	private JTextArea lines; 
-	private JMenuBar menu; 
+	private JTextArea textArea = new JTextArea(); // the area where you type
+	private JTextArea lines; // the line numbers
+	private JMenuBar menu; // the menu at the top
 
-	private JMenu file; 
-	private JMenu edit; 
-	private JMenu more; 
+	private JMenu file; // the file menu
+	private JMenu edit; // the edit menu
+	private JMenu more; // the more menu
 
-	private JMenuItem save; 
-	private JMenuItem saveAs; 
-	private JMenuItem open; 
+	private JMenuItem save; // the save file function
+	private JMenuItem saveAs; // the save file as function
+	private JMenuItem open; // the open file function
 	
-	private JMenuItem cut; 
-	private JMenuItem copy; 
-	private JMenuItem paste; 
-	private JMenuItem selectAll; 	
+	private JMenuItem cut; // the cut function
+	private JMenuItem copy; // the copy function
+	private JMenuItem paste; // the paste function
+	private JMenuItem selectAll; // the select all function
 
-	private JMenuItem fontSizeItem;
-	private JMenuItem fontStyleItem;
+	private JMenuItem fontSizeItem; // the font size function
+	private JMenuItem fontStyleItem; // the font style function
 
-	private JMenuItem findReplace;
-	private JMenuItem find; 
-	private JMenuItem newWindow; 
-	private JMenuItem closeWindow; 
+	private JMenuItem findReplace; // the find and replace function
+	private JMenuItem find; // the find function
+	private JMenuItem newWindow; // the new window function
+	private JMenuItem closeWindow; // the close window function
 
-	private JPanel panel; 
-	private JScrollPane scroller; 	
+	private JPanel panel; // holds the scroll bar
+	private JScrollPane scroller; // scroll bar itself
 
-	public File currentFile;
+	public File currentFile; // the current file user has opened and edits
 
-	private StringSelection ss; 
-  	private Toolkit toolkit; 
+	private StringSelection ss; // basically what's on the clipboard for copy paste
+  	private Toolkit toolkit; // assists with above
 
-  	private class NewWindow implements ActionListener  {
-		public void actionPerformed(ActionEvent e) {
-	        Main.newApp(); 
+  	/* here are my inner classes. i made them inner so they can access the variables of this instance of Notepad easily*/
+  	// making them external classes that extend notepad is too much of a pain 
+  	// they all implement action listener which is an interface that controls what happens when buttons are clicked
+
+  	private class NewWindow implements ActionListener  { // the new window inner class
+		public void actionPerformed(ActionEvent e) { // the action performed abstract method
+	        Main.newApp(); // create another application
 		}
 	}
 
-	private class CloseWindow implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+	private class CloseWindow implements ActionListener { // the close window inner class
+		public void actionPerformed(ActionEvent e) { // see line 83 
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)); // make the frame close this window
 		}
 	}
 
-	private class Save implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if (currentFile != null) {
+	private class Save implements ActionListener { // save inner class
+		public void actionPerformed(ActionEvent e) { // see line 83
+			if (currentFile != null) { // if user is editing a file
 				try {
-					PrintWriter w = new PrintWriter(currentFile); 	
-					w.println(getTextArea()); 
-					w.close(); 
-				} catch (Exception exception) {
+					PrintWriter w = new PrintWriter(currentFile); // use print writer to edit file on disk
+					w.println(getTextArea()); // set the file on disk to whatever the user typed up
+					w.close(); // close once done
+				} catch (Exception exception) { // catch exception
 					System.out.println("Exception");
 				} 
 			}
 		}
 
-		private Save() {
+		private Save() { // this is a private constructor so Save() cannot be called i had to override the default
 			
 		}
 	}
 
-	private class Open implements ActionListener{
-		private JFileChooser chooser; 
-		private String data = ""; 
+	private class Open implements ActionListener { // open inner class
+		private JFileChooser chooser; // this is to pick a file from the user hard disk (kind of like file explorer)
+		private String data = ""; // the file data
 
-		public void actionPerformed(ActionEvent e) {
-			chooser = new JFileChooser();
-			int result = chooser.showOpenDialog(null); 
-			if (result == JFileChooser.APPROVE_OPTION) {
+		public void actionPerformed(ActionEvent e) { // see line 83
+			chooser = new JFileChooser(); // create an instance of this file explorer object
+			int result = chooser.showOpenDialog(null);  // show the "open file" prompt
+			if (result == JFileChooser.APPROVE_OPTION) { // if user picked file
 				try {
-					File file = chooser.getSelectedFile();
+					File file = chooser.getSelectedFile(); // open up file
 					currentFile = file; 
-					textArea.setText(""); 
+					textArea.setText(""); // set the text area on Notepad to file data
 					String data = extractTextFromFile(file); 
-					textArea.setText(data); 	
+					textArea.setText(data); // change the title of the app
 					frame.setTitle("Notepad -- " + file.getName()); 
 				} catch (Exception exception) {
-
+					System.out.println("Exception");
 				}
 			}
 		}
 
-		public String getData() {
-			return data; 
+		public String getData() { // get the file data
+			return data;
 		}
 
-		private Open() {
-
+		private Open() { // this is a private constructor so Open() cannot be called i had to override the default
+			// this is for defense purposes so program doesn't crash if someone calls Open() again
 		}
 	}
 
-	private class SaveAs implements ActionListener {
-		private JFileChooser chooser;
-		private String path; 
+	private class SaveAs implements ActionListener { // save as inner class 
+		private JFileChooser chooser; // similar to open file
+		private String path; // the path of the file
 
 		public void actionPerformed(ActionEvent e) {
-			chooser = new JFileChooser();
-			int result = chooser.showSaveDialog(null); 
-			if (result == JFileChooser.APPROVE_OPTION) {
+			chooser = new JFileChooser(); // see line 117
+			int result = chooser.showSaveDialog(null); // kind of like line 118 but show save as instead of open
+			if (result == JFileChooser.APPROVE_OPTION) { // if user clicked save as
 				try {
-					currentFile = chooser.getSelectedFile(); 
+					currentFile = chooser.getSelectedFile(); // save file as name
 					frame.setTitle("Notepad -- " + currentFile.getName()); 
 					PrintWriter w = new PrintWriter(currentFile); 		
 					w.println(getTextArea()); 
@@ -156,75 +164,75 @@ public final class Notepad implements Runnable {
 		}
 	}
 
-	private class FontSize implements ActionListener {
+	private class FontSize implements ActionListener { // font size inner class 
 		public void actionPerformed(ActionEvent e) {
-			JTextField fontSizeField = new JTextField();
-			JLabel label = new JLabel("Font size (enter an integer between 1 and 100)");
+			JTextField fontSizeField = new JTextField(); // create a text field for font size
+			JLabel label = new JLabel("Font size (enter an integer between 1 and 100)"); // create object to prompt user to do what is says
 
-			JComponent inputs[] = new JComponent[] {
+			JComponent inputs[] = new JComponent[] { // POLYMORPHISM!!! basically using a JComponent array to hold objects that extend JComponent
 				label, 
 				fontSizeField
 			}; 
-			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", 1);
-			if (result == JOptionPane.OK_OPTION) {
-				fontSize = Integer.valueOf(fontSizeField.getText());
-				if (fontSize > 0) {
-					font = new Font(fontStyle, Font.PLAIN, fontSize); 
-					textArea.setFont(font); 
-					lines.setFont(font); 
+			int result = JOptionPane.showConfirmDialog(null, inputs, "Set font", 1); // prompt user to set font
+			if (result == JOptionPane.OK_OPTION) { // if user enters number and presses ok 
+				fontSize = Integer.valueOf(fontSizeField.getText()); // set font size
+				if (fontSize > 0) { // just in case someone tries to break rajesh's code with a negative font size
+					font = new Font(fontStyle, Font.PLAIN, fontSize); // change font 
+					textArea.setFont(font); // set font for text area (where user enters)
+					lines.setFont(font); // set font for line numbers (on the left size)
 				}
 			}
 		}
 
-		private FontSize() {
+		private FontSize() { 
 
 		}
 	}
 
-	private class FontStyle implements ActionListener {
+	private class FontStyle implements ActionListener { // font style inncer class
 		public void actionPerformed(ActionEvent e) {
-			String result = (String)JOptionPane.showInputDialog(
+			String result = (String)JOptionPane.showInputDialog( // this time show input dialog because imma show options not text field 
 				frame, 
 				"Font type (Select font below)", 
 				"Set font type", 
 				JOptionPane.PLAIN_MESSAGE,
 				null, 
-				fontStyles,
-				fontStyles[0]
+				fontStyles, // this is the array with all the font styles
+				fontStyles[0] // set default to first font style
 			); 
-			if (result != null) {
-				fontStyle = result; 
+			if (result != null) { // if they enter something 
+				fontStyle = result; // update font style
 				font = new Font(fontStyle, Font.PLAIN, fontSize); 
 				textArea.setFont(font); 
 				lines.setFont(font); 
 			}
 		}
 
-		private FontStyle() {
+		private FontStyle() { 
 
 		}
 	}
 
-	private class Find implements ActionListener {
+	private class Find implements ActionListener { // this is find inner class
 
-		protected class NoSuchSubstring extends Exception {
-			public NoSuchSubstring() {
-				super("Substring not Found"); 
+		protected class CharacterNoExist extends Exception { // i didn't find an exception for this so i made my own
+			public CharacterNoExist() { // i called it "CharacterNoExist" 
+				super("Substring not Found"); // if no character exist in char array it's an exception
 			}
 		}
 
-		protected int getLineFromIndex(int startIndex, String content) throws NoSuchSubstring {
-			char[] ch = content.toCharArray(); 
-			int line = 0; 
+		protected int getLineFromIndex(int startIndex, String content) throws CharacterNoExist {// finds which line a char is in 
+			char[] ch = content.toCharArray(); // convert string to char array
+			int line = 0; // set line to 0
 			for (int i = 0; i < ch.length; i++) {
 				if (ch[i] == '\n') {
-					line++; 
+					line++; // when you reach \n move to new line
 				}
-				if (i == startIndex) {
+				if (i == startIndex) { // return line where char found
 					return line + 1; 
 				}
 			}
-			throw new NoSuchSubstring(); 
+			throw new CharacterNoExist(); // else throw no such substring 
 		}
 
 		protected String search(String string, String subString) {
@@ -251,7 +259,7 @@ public final class Notepad implements Runnable {
 					for (int i : intList) {
 						result += "At line " + getLineFromIndex(i, string) + "\n"; 
 					}
-				} catch(NoSuchSubstring exception) {}
+				} catch(CharacterNoExist exception) {}
 				
 				return result; 
 			} 
