@@ -215,7 +215,7 @@ public final class Notepad implements Runnable {
 			JComponent comps[] = new JComponent[]{label};
 			int result = JOptionPane.showConfirmDialog(null, comps, "Read aloud", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
-				SpeakText.speak(getTextArea());
+				TextToSpeech.tts(getTextArea());
 			}
 		}
 	}
