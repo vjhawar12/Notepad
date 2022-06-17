@@ -59,7 +59,8 @@ public final class Notepad implements Runnable {
 
 	private JMenuItem fontSizeItem; // the font size function
 	private JMenuItem fontStyleItem; // the font style function
-	private JMenuItem speakAloud; // the speak aloud function
+	private JMenuItem textToSpeechItem; // the speak aloud function
+	private JMenuItem speechToTextItem;
 	private JMenuItem findReplace; // the find and replace function
 	private JMenuItem find; // the find function
 	private JMenuItem newWindow; // the new window function
@@ -211,7 +212,7 @@ public final class Notepad implements Runnable {
 		}
 	}
 
-	private class ReadAloud implements ActionListener {
+	private class TextToSpeechItem implements ActionListener {
   		public void actionPerformed(ActionEvent e) {
   			JLabel label = new JLabel("Read text aloud?");
 			JComponent comps[] = new JComponent[]{label};
@@ -221,6 +222,22 @@ public final class Notepad implements Runnable {
 			}
 		}
 	}
+
+	private class SpeechToTextItem implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JLabel label = new JLabel("Convert speech to text");
+			JComponent comps[] = new JComponent[]{label};
+			int result = JOptionPane.showConfirmDialog(null, comps, "Start speaking", JOptionPane.YES_NO_CANCEL_OPTION);
+			if (result == JOptionPane.YES_NO_OPTION) {
+				SpeechToText.start();
+				addToTextArea(SpeechToText.get());
+			} else {
+				SpeechToText.kill();
+			}
+		}
+	}
+
 
 	private class Find implements ActionListener { // this is find inner class
 
@@ -360,6 +377,10 @@ public final class Notepad implements Runnable {
 		textArea.setText(text);
 	}
 
+	protected void addToTextArea(String text) {
+  		textArea.append(text);
+	}
+
 	private void copyFromClipboard(String toCopy) {
 		Clipboard clipboard = toolkit.getSystemClipboard();
 		ss = new StringSelection(toCopy); 
@@ -379,33 +400,21 @@ public final class Notepad implements Runnable {
 		CloseWindow closeListener = new CloseWindow();
 		closeWindow.addActionListener(closeListener); 
 
-		cut.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				String highlighted = textArea.getSelectedText(); 
-        		clearTextArea(highlighted, 0, highlighted.length()); 
-        		copyFromClipboard(highlighted);
-			}
-		}); 	
+		cut.addActionListener(e -> {
+			String highlighted = textArea.getSelectedText();
+			clearTextArea(highlighted, 0, highlighted.length());
+			copyFromClipboard(highlighted);
+		});
 
-		copy.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				String highlighted = textArea.getSelectedText(); 
-				copyFromClipboard(highlighted);
-				System.out.println(highlighted);
-			}
-		}); 	
+		copy.addActionListener(e -> {
+			String highlighted = textArea.getSelectedText();
+			copyFromClipboard(highlighted);
+			System.out.println(highlighted);
+		});
 
-		paste.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				textArea.paste();  
-			}
-		}); 
+		paste.addActionListener(e -> textArea.paste());
 
-		selectAll.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				textArea.selectAll(); 
-			}
-		}); 		
+		selectAll.addActionListener(e -> textArea.selectAll());
 
 		FontSize fontSizeListener = new FontSize();
 		fontSizeItem.addActionListener(fontSizeListener);
@@ -413,8 +422,11 @@ public final class Notepad implements Runnable {
 		FontStyle fontStyleListener = new FontStyle();
 		fontStyleItem.addActionListener(fontStyleListener);
 
-		ReadAloud readAloudListener = new ReadAloud();
-		speakAloud.addActionListener(readAloudListener);
+		TextToSpeechItem textToSpeechItemListener = new TextToSpeechItem();
+		textToSpeechItem.addActionListener(textToSpeechItemListener);
+
+		SpeechToTextItem speechToTextItemListener = new SpeechToTextItem();
+		speechToTextItem.addActionListener(speechToTextItemListener);
 
 		SaveAs saveAsDialog = new SaveAs();
 		saveAs.addActionListener(saveAsDialog); 		
@@ -460,9 +472,10 @@ public final class Notepad implements Runnable {
 		find = new JMenuItem("Find");
 		newWindow = new JMenuItem("New Window");
 		closeWindow = new JMenuItem("Close Window");
-		speakAloud = new JMenuItem("Speak aloud");
+		textToSpeechItem = new JMenuItem("Text to speech");
+		speechToTextItem = new JMenuItem("Speech to text");
 
-		JMenuItem[] moreItems = {find, findReplace, newWindow, closeWindow, speakAloud};
+		JMenuItem[] moreItems = {find, findReplace, newWindow, closeWindow, textToSpeechItem, speechToTextItem};
 
 		for (JMenuItem item : moreItems) {
 			more.add(item); 
@@ -491,15 +504,15 @@ public final class Notepad implements Runnable {
 
 	private String extractTextFromFile(File file) throws IOException {
 		Scanner scanner = new Scanner(file); 
-		String data = ""; 
+		StringBuilder data = new StringBuilder();
 		while (scanner.hasNextLine()) {
-			data += scanner.nextLine(); 
-			data += "\n"; 
+			data.append(scanner.nextLine());
+			data.append("\n");
 		}
-		return data; 
+		return data.toString();
 	}
 
-	private void addFontsToArray() throws IOException {
+	private void addFontsToArray() {
  		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Font[] allFonts = ge.getAllFonts();
 		int i = 0;
@@ -511,7 +524,7 @@ public final class Notepad implements Runnable {
 		fontStyle = fontStyles[0]; 	
 	}
 
-	private void init() throws IOException {
+	private void init() {
 		addFontsToArray();
 		toolkit = Toolkit.getDefaultToolkit();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -529,11 +542,7 @@ public final class Notepad implements Runnable {
 	}
 
 	public void run() {
-		try {
-			init(); 	
-		} catch (Exception exception) {
-
-		}
+		init();
 	}
 
 	public Notepad() {
