@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "src"
+cd "src" || exit
 find . -name '*.class' -exec rm -rf {} \; 
 javac Main.java
 java Main	
