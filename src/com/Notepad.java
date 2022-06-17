@@ -11,6 +11,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowEvent; 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.imageio.ImageIO;
+import java.net.URL;
+import java.awt.image.BufferedImage;
 import java.io.File; 	
 import java.io.IOException;
 import java.io.PrintWriter; 
@@ -524,10 +527,16 @@ public final class Notepad implements Runnable {
 		fontStyle = fontStyles[0]; 	
 	}
 
-	private void init() {
+	private void init() throws IOException {
 		addFontsToArray();
 		toolkit = Toolkit.getDefaultToolkit();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		try {
+			ImageIcon img = new ImageIcon("/img/notepad.png");
+			frame.setIconImage(img.getImage());
+		} catch (Exception ioe) {
+			ioe.printStackTrace();
+		}
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(screenWidth, screenHeight); 
 
         addMenu();
@@ -542,7 +551,11 @@ public final class Notepad implements Runnable {
 	}
 
 	public void run() {
-		init();
+  		try {
+			init();
+		} catch (IOException ioe) {
+
+		}
 	}
 
 	public Notepad() {
