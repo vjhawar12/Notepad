@@ -1,3 +1,5 @@
+package com;
+
 // import all the libraries i need
 import javax.swing.*; // there's too many so i just used *
 import java.awt.Toolkit; 

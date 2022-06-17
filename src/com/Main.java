@@ -1,4 +1,4 @@
-// Vedant Jhawar 
+package com;// Vedant Jhawar
 // June 14 2022
 // Grade 11 Computer science
 // Notepad project
@@ -20,6 +20,11 @@ public class Main { // driver class
 	// method to create a new window
 	protected static void newApp() {
 		// basically just add a new instance of notepad to the existing pool of threads
+		try {
+			SpeechToText.speechToText();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		Notepad _app = new Notepad(); 
 		Thread app = new Thread(_app); 
 		app.start(); 
