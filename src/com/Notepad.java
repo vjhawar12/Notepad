@@ -608,7 +608,7 @@ public final class Notepad implements Runnable {
  		textArea.insert("This is a test", 0);
  		// set title
         frame.setTitle("Notepad -- sample.txt"); 
-		
+
         // make app resizable and set visibility
         frame.setResizable(true);      
         frame.setVisible(true);
