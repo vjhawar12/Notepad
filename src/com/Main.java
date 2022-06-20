@@ -1,4 +1,6 @@
-package com;// Vedant Jhawar
+package com;
+
+// Vedant Jhawar
 // June 14 2022
 // Grade 11 Computer science
 // Notepad project
@@ -9,9 +11,9 @@ package com;// Vedant Jhawar
 // to help you with editing your document
 // I made this using Java and it's swing library for GUI. For text to speech i used freetts for java
 
-
-import java.util.ArrayList;
-import javax.swing.SwingUtilities;
+// import libs
+import java.util.ArrayList; // to track threads
+import javax.swing.SwingUtilities; // to use invokeLater method
 
 public class Main { // driver class
 	// list of all threads running
@@ -23,14 +25,15 @@ public class Main { // driver class
 		Notepad _app = new Notepad(); 
 		Thread app = new Thread(_app); 
 		app.start(); 
-		applications.add(app); 
+		applications.add(app);
 	}
 
-	public static void main(String[] args) throws Exception { // driver method
+	public static void main(String[] args) { // driver method
+		// don't put the instance on the main method instead put it on invokeLater which relieves the load basically
 		SwingUtilities.invokeLater(Main::newApp);
 	}
 
-	// this is really important so Main() isn't accidentally called
+	// this is really important so Main() isn't accidentally called outside this class
 	private Main() {
 		
 	}
