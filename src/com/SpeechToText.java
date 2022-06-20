@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class SpeechToText {
     public static ArrayList<String> wordsSaid = new ArrayList<>();
     private static LiveSpeechRecognizer liveSpeechRecognizer;
-    private static final Logger logger = Logger.getLogger(Test.class.getName());
+    private static final Logger logger = Logger.getLogger(SpeechToText.class.getName());
     private static String speechRecogResult;
     private static boolean ignore = false;
     private static boolean speechThreadRunning = false;
