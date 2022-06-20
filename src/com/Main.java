@@ -9,7 +9,8 @@ package com;
 // Or open up an existing document and edit it and save it
 // You can use find and replace, search, cut, copy, paste, set font, and use text to speech to listen back and
 // to help you with editing your document
-// I made this using Java and it's swing library for GUI. For text to speech i used freetts for java
+// I made this using Java and it's swing library for GUI. For text to speech i used freetts for java. i tried using sphinx4 for speech to text
+// but unfortunately it hasn't worked yet.
 
 // import libs
 import java.util.ArrayList; // to track threads
