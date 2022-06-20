@@ -12,10 +12,12 @@ import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.LiveSpeechRecognizer;
 import edu.cmu.sphinx.api.SpeechResult;
 import edu.cmu.sphinx.result.WordResult;
+import java.util.ArrayList;
 
 public class SpeechToText {
+    public static ArrayList<String> wordsSaid = new ArrayList<>();
     private static LiveSpeechRecognizer liveSpeechRecognizer;
-    private static final Logger logger = Logger.getLogger(SpeechToText.class.getName());
+    private static final Logger logger = Logger.getLogger(Test.class.getName());
     private static String speechRecogResult;
     private static boolean ignore = false;
     private static boolean speechThreadRunning = false;
@@ -24,16 +26,16 @@ public class SpeechToText {
     private static final Object[] objs = new Object[] {liveSpeechRecognizer, logger, executorService, speechRecogResult};
 
     public static String get() {
-        return speechRecogResult;
+        StringBuilder str = new StringBuilder();
+        for (String s : wordsSaid) {
+            str.append(s);
+        }
+        System.out.println("You said: " + str);
+        return str.toString();
     }
 
     public static void kill() {
-        for (int i = 0; i < 3; i++) {
-            objs[i] = null;
-        }
-        ignore = false;
-        speechThreadRunning = false;
-        resourcesThreadRunning = false;
+        liveSpeechRecognizer.stopRecognition();
     }
 
     private static void startResourcesThread() {
@@ -58,48 +60,46 @@ public class SpeechToText {
     }
 
     private static void makeDecision(String speech, List<WordResult> speechWords) {
-        System.out.println(speech);
+        wordsSaid.add(speech);
     }
 
     private static void startSpeechRecog() {
         if (speechThreadRunning) {
-            logger.log(Level.INFO, "Thread already running");
+            // logger.log(Level.INFO, "Thread already running");
             return;
         }
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                speechThreadRunning = true;
-                ignore = false;
-                liveSpeechRecognizer.startRecognition(true);
+        Runnable runnable = () -> {
+            speechThreadRunning = true;
+            ignore = false;
+            liveSpeechRecognizer.startRecognition(true);
 
-                logger.log(Level.INFO, "Start speaking");
-                try {
-                    while (speechThreadRunning) {
-                        SpeechResult speechResult = liveSpeechRecognizer.getResult();
-                        if (!ignore){
-                            if (speechResult == null) {
-                                logger.log(Level.INFO, "Speech incomprehensible");
-                            } else {
-                                speechRecogResult = speechResult.getHypothesis();
-                                System.out.println(speechRecogResult);
-                                makeDecision(speechRecogResult, speechResult.getWords());
-                            }
+            logger.log(Level.INFO, "Start speaking");
+            try {
+                while (speechThreadRunning) {
+                    SpeechResult speechResult = liveSpeechRecognizer.getResult();
+                    if (!ignore){
+                        if (speechResult == null) {
+                            // logger.log(Level.INFO, "Speech incomprehensible");
                         } else {
-                            logger.log(Level.INFO, "Ignoring results");
+                            speechRecogResult = speechResult.getHypothesis();
+                            // System.out.println(speechRecogResult);
+                            wordsSaid.add(speechResult.getHypothesis());
+                            makeDecision(speechRecogResult, speechResult.getWords());
                         }
+                    } else {
+                        // logger.log(Level.INFO, "Ignoring results");
                     }
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, null, e);
-                    speechThreadRunning = false;
                 }
-                logger.log(Level.INFO, "exited");
+            } catch (Exception e) {
+                // logger.log(Level.WARNING, null, e);
+                speechThreadRunning = false;
             }
+            // logger.log(Level.INFO, "exited");
         };
         executorService.submit(runnable);
     }
 
-    public static void start() {
+    public static void init() {
         logger.log(Level.INFO, "Loading speech recognizer");
         Configuration configuration = new Configuration();
         configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
@@ -108,7 +108,7 @@ public class SpeechToText {
         try {
             liveSpeechRecognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException ioException) {
-            logger.log(Level.SEVERE, null, ioException);
+            // logger.log(Level.SEVERE, null, ioException);
         }
         startResourcesThread();
         startSpeechRecog();

@@ -22,6 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Element;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -227,16 +228,26 @@ public final class Notepad implements Runnable {
 	}
 
 	private class SpeechToTextItem implements ActionListener {
+  		private void start() {
+			SpeechToText.init();
+		}
+
+		private void stop() {
+			SpeechToText.kill();
+			addToTextArea(SpeechToText.get());
+		}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JLabel label = new JLabel("Convert speech to text");
 			JComponent comps[] = new JComponent[]{label};
 			int result = JOptionPane.showConfirmDialog(null, comps, "Start speaking", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (result == JOptionPane.YES_NO_OPTION) {
-				SpeechToText.start();
-				addToTextArea(SpeechToText.get());
+				System.out.println("start");
+				start();
 			} else {
-				SpeechToText.kill();
+				System.out.println("stop");
+				stop();
 			}
 		}
 	}
@@ -543,7 +554,8 @@ public final class Notepad implements Runnable {
         configureMenu();
         addTextBox();
         setLineNumbers(true);
-		textArea.insert("This is a test", 0);
+
+ 		textArea.insert("This is a test", 0);
         frame.setTitle("Notepad -- sample.txt"); 
 
         frame.setResizable(true);      
